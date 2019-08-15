@@ -11,16 +11,14 @@ using Newtonsoft.Json.Serialization;
 
 namespace RSA_Cryptography
 {
-    public class Coding
+    public class RSA
     {
-        RSAParameters rrr = new RSAParameters();
-
-        private static RSACryptoServiceProvider csp = new RSACryptoServiceProvider(2048);
+        private static RSACryptoServiceProvider csp = new RSACryptoServiceProvider(1024);
 
         private RSAParameters privateKey;
         private RSAParameters publicKey;
 
-        public Coding()
+        public RSA()
         {
             privateKey = csp.ExportParameters(true);
             publicKey = csp.ExportParameters(false);
@@ -28,7 +26,6 @@ namespace RSA_Cryptography
 
         public string Encrypt(string Text)
         {
-            csp = new RSACryptoServiceProvider();
             csp.ImportParameters(publicKey);
 
             byte[] TextBytes = Encoding.Unicode.GetBytes(Text);
@@ -39,7 +36,6 @@ namespace RSA_Cryptography
 
         public string Decrypt(string EncryptText)
         {
-            csp = new RSACryptoServiceProvider();
             csp.ImportParameters(privateKey);
 
             byte[] EncryptTextBytes = Convert.FromBase64String(EncryptText);
@@ -53,27 +49,53 @@ namespace RSA_Cryptography
             return JsonConvert.SerializeObject(publicKey);
         }
     }
+    public class SHA
+    {
 
+        public string Encrypt(string inputString)
+        {
+            SHA512 sha512 = SHA512.Create();
+            byte[] bytes = Encoding.UTF8.GetBytes(inputString);
+            byte[] hash = sha512.ComputeHash(bytes);
+            return GetStringFromHash(hash);
+        }
+
+
+        private  string GetStringFromHash(byte[] hash)
+        {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("X2"));
+            }
+            return result.ToString();
+        }
+
+    }
 
 
     class Program
     {
         static void Main(string[] args)
         {
-            Coding R = new Coding();
-            //Console.WriteLine($"PublicKey: \n {R.publicKeyToString()}");
+            RSA R = new RSA();
+
+            //Console.WriteLine($"PublicKey: {R.publicKeyToString()}");
 
             var Text = "BetConstruct";
 
-            Console.WriteLine($"Text: \n {Text}");
+            Console.WriteLine($"Text: {Text}");
 
             var EncryptText = R.Encrypt(Text);
 
-            Console.WriteLine($"Encrypt Text: \n {EncryptText}");
+            Console.WriteLine($"Encrypt Text: {EncryptText}");
 
             var DecryptTex = R.Decrypt(EncryptText);
 
-            Console.WriteLine($"Decrypt Text: \n {DecryptTex}");
+            Console.WriteLine($"Decrypt Text: {DecryptTex}");
+
+            Console.Read();
         }
     }
 }
